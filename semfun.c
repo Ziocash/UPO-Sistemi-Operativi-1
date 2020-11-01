@@ -1,7 +1,6 @@
 #include "semfun.h"
 
 int seminit(int semid, int semnum, int initval)
-/* inizializzazione con initval della componente semnum di semid */
 {
     int r;
 
