@@ -41,7 +41,6 @@ void wall(int taskid)
         shared->counter = 0;
         up(semid, 0);
     }
-    
 }
 
 void task(int taskid)
