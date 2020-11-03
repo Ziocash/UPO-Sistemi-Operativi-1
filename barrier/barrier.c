@@ -34,10 +34,7 @@ void wall(int taskid)
     }
     else
     {
-        for (int i = 0; i < n-1; i++)
-        {
-            up(semid, 1);
-        }
+        up(semid, 1);
         shared->counter = 0;
         up(semid, 0);
     }
