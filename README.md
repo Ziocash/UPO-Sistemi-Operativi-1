@@ -5,3 +5,4 @@ UNIUPO - Operating Systems 1 course repository
 Repository currently contains:
 
 - [Barrier](./barrier/): task synchronization barrier
+- [System calls](./system-calls): system calls
