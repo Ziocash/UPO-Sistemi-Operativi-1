@@ -23,6 +23,13 @@ int main(int argc, char *argv[])
     }
 
     int fd = open(argv[1], O_RDWR | O_APPEND | O_CREAT, S_IWGRP | S_IRGRP | S_IWUSR | S_IRUSR);
+    
+    if(fd == -1)
+    {
+        perror("Error creating file: ");
+        exit(1);
+    }
+    
     write(fd, argv[2], strlen(argv[2]));
     close(fd);
     write(STDOUT_FILENO, "File created correctly, content loaded.\nTerminating...\n\n", 58);
