@@ -34,9 +34,12 @@ void wall(int taskid)
     }
     else
     {
-        up(semid, 1);
-        shared->counter = 0;
-        up(semid, 0);
+        shared->counter++;
+        for (int i=0; i < n; i++)
+        {
+            up(semid, 1);
+            up(semid, 0);
+        }
     }
 }
 
@@ -83,6 +86,6 @@ int main(void)
     for (int i=0; i < n; i++)
         wait(NULL);
 
-    printf("Counter set to %d", shared->counter);
+    printf("Counter set to %d\n", shared->counter);
     shmctl(shmid, IPC_RMID, NULL);
 }
