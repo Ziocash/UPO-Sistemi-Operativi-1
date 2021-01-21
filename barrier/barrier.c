@@ -10,6 +10,9 @@
 #include <signal.h>
 #include "semfun.h"
 
+#define MUTEX 0
+#define SEMAPHORE 1
+
 int shmid = 0;
 pid_t semid = 0;
 int n = 0;
@@ -24,21 +27,21 @@ var_condivise *shared;
 void wall(int taskid)
 {
     printf("downing\n");
-    down(semid, 0);
+    down(semid, MUTEX);
     if(shared->counter < n - 1 )
     {
         shared->counter++;
         printf("Shared counter = %d, incremented by task %d\n", shared->counter, taskid);
-        up(semid, 0);
-        down(semid, 1);
+        up(semid, MUTEX);
+        down(semid, SEMAPHORE);
     }
     else
     {
         shared->counter++;
         for (int i=0; i < n; i++)
         {
-            up(semid, 1);
-            up(semid, 0);
+            up(semid, SEMAPHORE);
+            up(semid, MUTEX);
         }
     }
 }
@@ -65,8 +68,8 @@ int main(void)
         perror("An error occured creating shared memory space");
     shared = (var_condivise *)shmat(shmid, NULL, 0);
 
-    seminit(semid, 0, 1); /*Mutex accesso al counter*/
-    seminit(semid, 1, 0); /*Semaforo di sincronizzazione*/
+    seminit(semid, MUTEX, 1); /*Mutex accesso al counter*/
+    seminit(semid, SEMAPHORE, 0); /*Semaforo di sincronizzazione*/
 
     printf("Inserire un numero di processi simultanei da eseguire: ");
     scanf(" %d", &n);
