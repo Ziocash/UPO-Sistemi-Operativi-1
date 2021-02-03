@@ -10,4 +10,4 @@ int seminit(int semid, int semnum, int initval);
 int down(int semid, int semnum);
 
 /* operazione UP sulla componente semnum di semid */
-int up(int semid, int semnum);	
+int up(int semid, int semnum);

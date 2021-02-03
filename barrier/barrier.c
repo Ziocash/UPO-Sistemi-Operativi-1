@@ -28,7 +28,7 @@ void wall(int taskid)
 {
     printf("downing\n");
     down(semid, MUTEX);
-    if(shared->counter < n - 1 )
+    if (shared->counter < n - 1)
     {
         shared->counter++;
         printf("Shared counter = %d, incremented by task %d\n", shared->counter, taskid);
@@ -38,7 +38,7 @@ void wall(int taskid)
     else
     {
         shared->counter++;
-        for (int i=0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             up(semid, SEMAPHORE);
             up(semid, MUTEX);
@@ -57,18 +57,18 @@ void task(int taskid)
 int main(void)
 {
     semid = semget(IPC_PRIVATE, 2, 0600);
-    if(semid == -1)
+    if (semid == -1)
     {
         perror("Semget error");
         exit(1);
     }
 
     shmid = shmget(IPC_PRIVATE, sizeof(var_condivise), 0600);
-    if(shmid < 0)
+    if (shmid < 0)
         perror("An error occured creating shared memory space");
     shared = (var_condivise *)shmat(shmid, NULL, 0);
 
-    seminit(semid, MUTEX, 1); /*Mutex accesso al counter*/
+    seminit(semid, MUTEX, 1);     /*Mutex accesso al counter*/
     seminit(semid, SEMAPHORE, 0); /*Semaforo di sincronizzazione*/
 
     printf("Inserire un numero di processi simultanei da eseguire: ");
@@ -86,7 +86,7 @@ int main(void)
             task(i + 1);
     }
 
-    for (int i=0; i < n; i++)
+    for (int i = 0; i < n; i++)
         wait(NULL);
 
     printf("Counter set to %d\n", shared->counter);

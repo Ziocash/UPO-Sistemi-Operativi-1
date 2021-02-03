@@ -8,12 +8,12 @@ int seminit(int semid, int semnum, int initval)
     /* union semun is defined by including <sys/sem.h> */
 #else
     /* according to X/OPEN we have to define it ourselves */
-    union semun 
+    union semun
     {
         int val;               /* value for SETVAL */
         struct semid_ds *buf;  /* buffer for IPC_STAT, IPC_SET */
         unsigned short *array; /* array for GETALL, SETALL */
-                                /* Linux specific part: */
+                               /* Linux specific part: */
         struct seminfo *__buf; /* buffer for IPC_INFO */
     };
 #endif
@@ -37,7 +37,7 @@ int down(int semid, int semnum)
     sb.sem_flg = 0;
     r = semop(semid, &sb, 1);
     if (r == -1)
-    perror("semop in down");
+        perror("semop in down");
     return r;
 }
 
@@ -51,6 +51,6 @@ int up(int semid, int semnum)
     sb.sem_flg = 0;
     r = semop(semid, &sb, 1);
     if (r == -1)
-    perror("semop in up");
+        perror("semop in up");
     return r;
 }
