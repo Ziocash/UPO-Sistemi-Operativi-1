@@ -9,27 +9,27 @@
 int main(int argc, char *argv[])
 {
     //Checking if the user inserts too few parameters
-    if(argc < 3)
+    if (argc < 3)
     {
         write(STDOUT_FILENO, "Missing parameters.\nTry using ./append <filename> <\"string\">\n", 61);
         exit(1);
     }
-    
+
     //Checking if the user inserts too many parameters
-    if(argc > 3)
+    if (argc > 3)
     {
         write(STDOUT_FILENO, "Too many parameters.\nTry using ./append <filename> <\"string\">\n", 64);
         exit(1);
     }
 
     int fd = open(argv[1], O_RDWR | O_APPEND | O_CREAT, S_IWGRP | S_IRGRP | S_IWUSR | S_IRUSR);
-    
-    if(fd == -1)
+
+    if (fd == -1)
     {
         perror("Error creating file: ");
         exit(1);
     }
-    
+
     write(fd, argv[2], strlen(argv[2]));
     close(fd);
     write(STDOUT_FILENO, "File created correctly, content loaded.\nTerminating...\n\n", 58);
