@@ -19,11 +19,6 @@
 #define YELLOW  "\x1b[33m"
 #define RESET   "\x1b[0m"
 
-//Background mode
-#define BACKGROUND 99
-//Foreground mode
-#define FOREGROUND 0
-
 #define EOL 1       /* end of line */
 #define ARG 2       /* argomento normale */
 #define AMPERSAND 3 /* & */
@@ -32,24 +27,46 @@
 #define MAXARG 512 /* numero massimo di argomenti */
 #define MAXBUF 512 /* lunghezza massima riga di input */
 
+/*bpid mode definitions*/
 typedef enum bpidmodes_s
 {
     ADD,
     REMOVE
 }bpidmodes_s;
 
+/*bpid mode type definition*/
 typedef bpidmodes_s bpidmode;
 
-int inarg(char c); /* verifica se c non è un carattere speciale */
+/*execution mode definitions*/
+typedef enum exemodes_s
+{
+    FOREGROUND,
+    BACKGROUND
+}exemodes_s;
 
-int userin(char *p); /* stampa il prompt e legge una riga */
+/*execution mode type definition*/
+typedef exemodes_s exemode;
 
-int gettok(char **outptr); /* legge un simbolo */
+/* verifica se c non è un carattere speciale */
+int inarg(char c); 
 
-void procline(); /* tratta una riga di input */
+/* stampa il prompt e legge una riga */
+int userin(char *p); 
 
-void runcommand(char **cline); /* esegue un comando */
+/* legge un simbolo */
+int gettok(char **outptr); 
 
-void bpid(pid_t pid, bpidmode mode); /*add or remove pid from BPID environment variable*/
+/* tratta una riga di input */
+void procline(); 
 
-void promptget(char *prompt);
+/* esegue un comando */
+void runcommand(char **cline, exemode mode); 
+
+/*add or remove pid from BPID environment variable*/
+void bpid(pid_t pid, bpidmode mode); 
+
+/*waits for background tasks*/
+void waitbg();
+
+/**/
+void sighandler(int sig); 
