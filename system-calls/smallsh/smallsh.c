@@ -1,12 +1,26 @@
 #include "smallsh.h"
 
+pid_t foreground_pid = 0;
+
+void waitbg()
+{
+    int returnvalue = 0;
+    pid_t pid;
+
+    while((pid = waitpid(-1, &returnvalue, WNOHANG)) > 0)
+    {
+        printf("PID %d terminated with exit value %d\n", pid, WEXITSTATUS(returnvalue));
+        bpid(pid, REMOVE);
+    }
+}
+
 void procline(void) /* tratta una riga di input */
 {
 
     char *arg[MAXARG + 1];              // array di puntatori per runcommand
     int toktype;                        // tipo del simbolo nel comando
     int narg;                           // numero di argomenti considerati finora
-    int functype = FOREGROUND;          // tipo di funzione da eseguire (FOREGROUND o BACKGROUND)
+    exemode functype = FOREGROUND;          // tipo di funzione da eseguire (FOREGROUND o BACKGROUND)
 
     narg = 0;
 
@@ -18,53 +32,63 @@ void procline(void) /* tratta una riga di input */
 
         switch (toktype = gettok(&arg[narg]))
         {
-        case ARG:
+            case ARG:
 
-            /* se argomento: passa al prossimo simbolo */
+                /* se argomento: passa al prossimo simbolo */
 
-            if (narg < MAXARG)
-                narg++;
-            break;
-        case AMPERSAND:
+                if (narg < MAXARG)
+                    narg++;
+                break;
 
-            /*se background: imposto il functype su BACKGROUND*/
-            functype = BACKGROUND;
+            case AMPERSAND:
+                /*se background: imposto il functype su BACKGROUND*/
+                functype = BACKGROUND;
+                break;
+            
+            case SEMICOLON:
+            case EOL:
+                if (narg != 0)
+                {
+                    arg[narg] = NULL;
+                    runcommand(arg, functype);
+                }
 
-            break;
+                if(toktype == EOL)
+                    waitbg();
 
-        case EOL:
-        case SEMICOLON:
+                /* se non fine riga (descrizione comando finisce con ';')
+                    bisogna ricominciare a riempire arg dall'indice 0 */
 
-            /* se fine riga o ';' esegue il comando ora contenuto in arg, mettendo NULL per indicare la fine degli argomenti: serve a execvp */
-
-            if (narg != 0)
-            {
-                arg[narg] = NULL;
-                runcommand(arg);
-            }
-
-            /* se non fine riga (descrizione comando finisce con ';')
-                bisogna ricominciare a riempire arg dall'indice 0 */
-
-            if (toktype != EOL)
                 narg = 0;
-
-            break;
+                break;
         }
     }
-
     while (toktype != EOL); /* fine riga, procline finita */
 }
 
-void runcommand(char **cline) /* esegue un comando */
+void runcommand(char **cline, exemode mode) /* esegue un comando */
 {
+    /*bpid command execution*/
+    if (strcmp(*cline, "bp") == 0)
+    {
+        printf("\nBPID: %s\n", getenv("BPID"));
+        return;
+    }
+
+    /*close command*/
+    if(strcmp(*cline, "exit") == 0)
+    {
+        waitbg();
+        exit(0);
+    }
+
     pid_t pid;
     int exitstat, ret;
 
     pid = fork();
     if (pid == (pid_t)-1)
     {
-        perror("smallsh: fork fallita");
+        perror("smallsh: fork failed");
         return;
     }
 
@@ -81,13 +105,32 @@ void runcommand(char **cline) /* esegue un comando */
 
     /* non serve "else"... ma bisogna aver capito perche' :-)  */
 
-    /* qui aspetta sempre e comunque - i comandi in background 
-     richiederebbero un trattamento diverso */
-
-    ret = wait(&exitstat);
+    if(mode == FOREGROUND)
+    {
+        signal(SIGINT, sighandler);
+        foreground_pid = pid;
+        ret = waitpid(pid, &exitstat, 0);
+    }
+    else
+    {
+        signal(SIGINT, SIG_DFL);
+        bpid(pid, ADD);
+        printf("Background process. PID: %d\n", pid);
+    }
 
     if (ret == -1)
         perror("wait");
+}
+
+/*SIGINT handler*/
+void sighandler(int sig)
+{
+    if(sig == SIGINT)
+    {
+        kill(foreground_pid, SIGINT);
+        foreground_pid = 0;
+    }
+    signal(SIGINT, SIG_DFL);
 }
 
 void bpid(pid_t pid, bpidmode mode)
@@ -97,7 +140,7 @@ void bpid(pid_t pid, bpidmode mode)
     char *stringpid = calloc(sizeof(pid) + 1, sizeof(char));
     if (stringpid == NULL)
     {
-        perror("Error during memory allocation");
+        perror("Error during memory allocation: ");
         return;
     }
 
@@ -106,7 +149,7 @@ void bpid(pid_t pid, bpidmode mode)
         char *temp = calloc(sizeof(BPID) + sizeof(pid) + 1, sizeof(char));
         if (temp == NULL)
         {
-            perror("Error during memory allocation");
+            perror("Error during memory allocation: ");
             free(stringpid);
             return;
         }
@@ -146,7 +189,7 @@ void bpid(pid_t pid, bpidmode mode)
     else
     {
         errno = EINVAL;
-        perror("Incorrect mode");
+        perror("Incorrect mode: ");
     }
     free(stringpid);
 }
@@ -155,7 +198,7 @@ int main()
 {
     int bpidres = setenv("BPID", "", 1);
     if (bpidres != 0)
-        perror("Impossibile creare variabile d'ambiente BPID");
+        perror("BPID environment variable creation failed: ");
 
     char *prompt = NULL;
     char *home = getenv("HOME");
@@ -165,7 +208,7 @@ int main()
     prompt = (char *)calloc(dim, sizeof(char));
     if(prompt == NULL)
     {
-        perror("Allocation error");
+        perror("Allocation error: ");
         exit(EXIT_FAILURE);
     }
     sprintf(prompt, "%%%s:%s:", user, home);
@@ -177,14 +220,3 @@ int main()
     free(prompt);
     return EXIT_SUCCESS;
 }
-
-/*
-bpid(15200, ADD);
-log_str(getenv("BPID"));
-bpid(15204, ADD);
-bpid(15201, ADD);
-bpid(15202, ADD);
-log_str(getenv("BPID"));
-bpid(15200, REMOVE);
-bpid(15202, REMOVE);
-log_str(getenv("BPID"));*/
