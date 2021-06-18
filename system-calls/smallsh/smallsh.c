@@ -90,7 +90,7 @@ void runcommand(char **cline) /* esegue un comando */
         perror("wait");
 }
 
-void bpid(pid_t pid, int mode)
+void bpid(pid_t pid, bpidmode mode)
 {
     char *BPID = getenv("BPID");
 
@@ -154,7 +154,6 @@ void bpid(pid_t pid, int mode)
 int main()
 {
     int bpidres = setenv("BPID", "", 1);
-    log_num(bpidres);
     if (bpidres != 0)
         perror("Impossibile creare variabile d'ambiente BPID");
 

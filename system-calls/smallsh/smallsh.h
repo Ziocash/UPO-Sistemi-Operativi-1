@@ -24,11 +24,6 @@
 //Foreground mode
 #define FOREGROUND 0
 
-//BPID remove pid mode
-#define REMOVE 0
-//BPID add pid mode
-#define ADD 1
-
 #define EOL 1       /* end of line */
 #define ARG 2       /* argomento normale */
 #define AMPERSAND 3 /* & */
@@ -36,6 +31,14 @@
 
 #define MAXARG 512 /* numero massimo di argomenti */
 #define MAXBUF 512 /* lunghezza massima riga di input */
+
+typedef enum bpidmodes_s
+{
+    ADD,
+    REMOVE
+}bpidmodes_s;
+
+typedef bpidmodes_s bpidmode;
 
 int inarg(char c); /* verifica se c non è un carattere speciale */
 
@@ -47,6 +50,6 @@ void procline(); /* tratta una riga di input */
 
 void runcommand(char **cline); /* esegue un comando */
 
-void bpid(pid_t pid, int mode); /*add or remove pid from BPID environment variable*/
+void bpid(pid_t pid, bpidmode mode); /*add or remove pid from BPID environment variable*/
 
 void promptget(char *prompt);
