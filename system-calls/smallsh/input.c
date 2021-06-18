@@ -88,6 +88,9 @@ int gettok(char **outptr) /* legge un simbolo e lo mette in tokbuf */
     case ';':
         type = SEMICOLON;
         break;
+    case '&':
+        type = AMPERSAND;
+        break;
     default:
         type = ARG;
         /* copia gli altri caratteri del simbolo */
