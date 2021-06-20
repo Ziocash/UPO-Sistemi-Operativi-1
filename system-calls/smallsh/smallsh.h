@@ -27,46 +27,89 @@
 #define MAXARG 512 /* numero massimo di argomenti */
 #define MAXBUF 512 /* lunghezza massima riga di input */
 
-/*bpid mode definitions*/
+/**
+ * @brief BPID mode definitions.
+ */
 typedef enum bpidmodes_s
 {
     ADD,
     REMOVE
 }bpidmodes_s;
 
-/*bpid mode type definition*/
+/**
+ * @brief BPID mode type definition.
+ */
 typedef bpidmodes_s bpidmode;
 
-/*execution mode definitions*/
+/**
+ * @brief Execution mode definitions.
+ */
 typedef enum exemodes_s
 {
     FOREGROUND,
     BACKGROUND
 }exemodes_s;
 
-/*execution mode type definition*/
+/**
+ * @brief Execution mode type definition.
+ */
 typedef exemodes_s exemode;
 
-/* verifica se c non è un carattere speciale */
+/**
+ * @brief Checks if c is not a special character.
+ * 
+ * @param c The character
+ * @return Returns `1` if c is a special character, otherwise `0`
+ */
 int inarg(char c); 
 
-/* stampa il prompt e legge una riga */
+/**
+ * @brief Prints the prompt and reads a line.
+ *
+ * @param p The prompt.
+ */
 int userin(char *p); 
 
-/* legge un simbolo */
+/**
+ * @brief Reads a symbol.
+ *
+ * @param outptr Pointer to a string pointer.
+ * 
+ * @return Returns the token type
+ */
 int gettok(char **outptr); 
 
-/* tratta una riga di input */
+/**
+ * @brief Processes an input line.
+ */
 void procline(); 
 
-/* esegue un comando */
+/**
+ * @brief Runs a command with the execution mode setting (foreground or background).
+ * 
+ * @param cline Pointer to string pointer containing the command with arguments.
+ * @param mode Execution mode (background or foreground).
+ */
 void runcommand(char **cline, exemode mode); 
 
-/*add or remove pid from BPID environment variable*/
+/**
+ * @brief BPID handling function.
+ * 
+ * @param pid Background PID that will be stored/removed from BPID environment variable.
+ * @param mode BPID mode (add or remove).
+ */
 void bpid(pid_t pid, bpidmode mode); 
 
-/*waits for background tasks*/
+/**
+ * @brief Waits for background tasks.
+ * 
+ */
 void waitbg();
 
-/**/
+/**
+ * @brief SIGINT signal handler, redirects signal onto foreground command.
+ * Default action if background command.
+ * 
+ * @param sig Signal received by the shell.
+ */
 void sighandler(int sig); 
