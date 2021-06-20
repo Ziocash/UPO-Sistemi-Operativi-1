@@ -53,8 +53,7 @@ void procline(void) /* tratta una riga di input */
                     runcommand(arg, functype);
                 }
 
-                if(toktype == EOL)
-                    waitbg();
+                waitbg();
 
                 /* se non fine riga (descrizione comando finisce con ';')
                     bisogna ricominciare a riempire arg dall'indice 0 */
@@ -97,7 +96,6 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
 
         /* esegue il comando il cui nome e' il primo elemento di cline,
        passando cline come vettore di argomenti */
-
         execvp(*cline, cline);
         perror(*cline);
         exit(1);
@@ -109,7 +107,7 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
     {
         signal(SIGINT, sighandler);
         foreground_pid = pid;
-        ret = waitpid(pid, &exitstat, 0);
+        ret = waitpid(foreground_pid, &exitstat, 0);
     }
     else
     {
@@ -122,7 +120,6 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
         perror("wait");
 }
 
-/*SIGINT handler*/
 void sighandler(int sig)
 {
     if(sig == SIGINT)
@@ -140,7 +137,7 @@ void bpid(pid_t pid, bpidmode mode)
     char *stringpid = calloc(sizeof(pid) + 1, sizeof(char));
     if (stringpid == NULL)
     {
-        perror("Error during memory allocation: ");
+        perror("Error during memory allocation");
         return;
     }
 
@@ -149,7 +146,7 @@ void bpid(pid_t pid, bpidmode mode)
         char *temp = calloc(sizeof(BPID) + sizeof(pid) + 1, sizeof(char));
         if (temp == NULL)
         {
-            perror("Error during memory allocation: ");
+            perror("Error during memory allocation");
             free(stringpid);
             return;
         }
@@ -194,25 +191,37 @@ void bpid(pid_t pid, bpidmode mode)
     free(stringpid);
 }
 
+/* Code entry point
+ * - Environment variables initialization and return
+ * - Prompt allocation and free
+ * - BPID variable set and unset
+ */
 int main()
 {
+    //Set up environment variable BPID
     int bpidres = setenv("BPID", "", 1);
     if (bpidres != 0)
-        perror("BPID environment variable creation failed: ");
+        perror("BPID environment variable creation failed");
 
+    //
     char *prompt = NULL;
     char *home = getenv("HOME");
     char *user = getenv("USER");
     size_t dim = 0;
+
+    //String length calculation
     dim = strlen(home) + strlen(user) + 5;
+    
+    //Prompt
     prompt = (char *)calloc(dim, sizeof(char));
     if(prompt == NULL)
     {
-        perror("Allocation error: ");
+        perror("Allocation error");
         exit(EXIT_FAILURE);
     }
     sprintf(prompt, "%%%s:%s:", user, home);
 
+    //Process command line
     while (userin(prompt) != EOF)
         procline();
 
