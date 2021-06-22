@@ -105,11 +105,3 @@ void bpid(pid_t pid, bpidmode mode);
  * 
  */
 void waitbg();
-
-/**
- * @brief SIGINT signal handler, redirects signal onto foreground command.
- * Default action if background command.
- * 
- * @param sig Signal received by the shell.
- */
-void sighandler(int sig); 

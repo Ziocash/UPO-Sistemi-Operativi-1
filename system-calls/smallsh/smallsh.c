@@ -1,7 +1,5 @@
 #include "smallsh.h"
 
-pid_t foreground_pid = 0;
-
 void waitbg()
 {
     int returnvalue = 0;
@@ -105,9 +103,9 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
 
     if(mode == FOREGROUND)
     {
-        signal(SIGINT, sighandler);
-        foreground_pid = pid;
-        ret = waitpid(foreground_pid, &exitstat, 0);
+        signal(SIGINT, SIG_IGN);
+        ret = waitpid(pid, &exitstat, 0);
+        signal(SIGINT, SIG_DFL);
     }
     else
     {
@@ -118,16 +116,6 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
 
     if (ret == -1)
         perror("wait");
-}
-
-void sighandler(int sig)
-{
-    if(sig == SIGINT)
-    {
-        kill(foreground_pid, SIGINT);
-        foreground_pid = 0;
-    }
-    signal(SIGINT, SIG_DFL);
 }
 
 void bpid(pid_t pid, bpidmode mode)
