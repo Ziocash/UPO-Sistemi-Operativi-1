@@ -57,6 +57,7 @@ void procline(void) /* tratta una riga di input */
                     bisogna ricominciare a riempire arg dall'indice 0 */
 
                 narg = 0;
+                functype = FOREGROUND;
                 break;
         }
     }
