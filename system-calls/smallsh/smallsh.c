@@ -76,7 +76,7 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
     if(strcmp(*cline, "exit") == 0)
     {
         waitbg();
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 
     pid_t pid;
@@ -96,7 +96,7 @@ void runcommand(char **cline, exemode mode) /* esegue un comando */
        passando cline come vettore di argomenti */
         execvp(*cline, cline);
         perror(*cline);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* non serve "else"... ma bisogna aver capito perche' :-)  */
