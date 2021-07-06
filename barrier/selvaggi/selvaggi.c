@@ -30,23 +30,50 @@ int semaphoreid;
 /*Shared variables structure*/
 typedef struct commons
 {
+    // Portions available in the pan
     int portions;
+    // Fill up times
     int fill_up_times;
+    // Number of portions passed on launch
     int number_portions;
+    // Number of repetions each eater must do before terminate
     int repetitions;
 } vars;
 
 /*Pointer to access shared variables*/
 vars *shared;
 
+/**
+ * @brief Function representing producer task
+ * 
+ */
 void cooker();
+
+/**
+ * @brief Function representing consumer tasks
+ * 
+ * @param taskid Task id
+ */
 void eater(int taskid);
+
+/**
+ * @brief Check if parameters are correctly passed to executable
+ * 
+ * @param argc Number of arguments
+ * @param executable Executable string name
+ */
 void usage(int argc, char *executable);
 
+/**
+ * @brief Code entry point
+ * 
+ */
 int main(int argc, char *argv[])
 {
     usage(argc, argv[0]);
 
+    //Semaphore initialization 
+    //IPC_PRIVATE
     semaphoreid = semget(IPC_PRIVATE, 3, 0600);
     if (semaphoreid == -1)
     {
@@ -54,9 +81,13 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    //Shared memory creation
+    /*
+     * IPC_PRIVATE create a brand new set of semaphores.
+     * 
+     * 0600 = Owner can read and  write
+     */
     sharedid = shmget(IPC_PRIVATE, sizeof(vars), 0600);
-    //Coonect memory segment to a pointer
+    //Cast memory segment to vars pointer
     shared = (vars *)shmat(sharedid, NULL, 0);
 
     task_number = atoi(argv[1]);
@@ -94,10 +125,9 @@ int main(int argc, char *argv[])
     kill(cookerpid, SIGTERM);
 
     shmctl(sharedid, IPC_RMID, NULL);
-    printf("The pan was fill up %d times. Remaining portions: %d\n\n", shared->fill_up_times, shared->portions);
+    printf("The pan was filled up %d times. Remaining portions: %d\n\n", shared->fill_up_times, shared->portions);
 }
 
-/*Checks if arguments are 4*/
 void usage(int argc, char *executable)
 {
     if (argc != 4)
@@ -130,6 +160,7 @@ void eater(int taskid)
 {
     for (int i = 0; i < shared->repetitions; ++i)
     {
+        //Entering critical section
         down(semaphoreid, MUTEX);
         printf("Eater %d shared variables access granted.\n", taskid);
         if (shared->portions == 0)
@@ -140,6 +171,7 @@ void eater(int taskid)
         }
         shared->portions--;
         printf("Eater %d eats a portion. Remaining portions: %d\n", taskid, shared->portions);
+        //Exiting critical section
         up(semaphoreid, MUTEX);
         usleep(500);
     }
