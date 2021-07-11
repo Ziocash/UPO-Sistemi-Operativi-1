@@ -122,6 +122,8 @@ int main(int argc, char *argv[])
     for (int i = 0; i < task_number; i++)
         wait(NULL);
 
+    //printf("PID %d terminating\n", wait(NULL));    
+
     kill(cookerpid, SIGTERM);
 
     shmctl(sharedid, IPC_RMID, NULL);
